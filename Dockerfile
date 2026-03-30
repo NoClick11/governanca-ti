@@ -1,23 +1,22 @@
-# Stage 1: Build assets
-FROM node:22-alpine AS assets
-
-# Dependências de compilação para binários nativos (Tailwind Oxide)
-RUN apk add --no-cache libc6-compat
-
+# Stage 1: Install PHP dependencies (Composer)
+FROM composer:latest AS composer
 WORKDIR /app
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-# Copiar apenas package files primeiro (cache de dependências)
+# Stage 2: Build frontend assets
+FROM node:22-alpine AS assets
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
-
-# Copiar o resto dos arquivos e buildar
 COPY . .
+COPY --from=composer /app/vendor ./vendor
 RUN npm run build
 
-# Stage 2: App
+# Stage 3: Production App
 FROM php:8.3-fpm-alpine
 
-# Instalar dependências de sistema
 RUN apk add --no-cache \
     nginx \
     supervisor \
@@ -29,31 +28,21 @@ RUN apk add --no-cache \
     unzip \
     ca-certificates
 
-# Instalar extensões PHP
 RUN docker-php-ext-install pdo_pgsql gd zip opcache intl
 
-# Configurações de produção do PHP
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
-# Configurações do Nginx
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
-
-# Configurações do Supervisord
 COPY docker/supervisord.conf /etc/supervisord.conf
 
-# Preparar o diretório da aplicação
 WORKDIR /var/www/html
 COPY . .
+COPY --from=composer /app/vendor ./vendor
 COPY --from=assets /app/public/build ./public/build
 
-# Instalar Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-RUN composer install --no-dev --optimize-autoloader
-
-# Ajustar permissões
 RUN chown -R www-data:www-data storage bootstrap/cache
+RUN mkdir -p /var/log/supervisor && chown -R root:root /var/log/supervisor
 
-# Script de entrada
 COPY docker/entrypoint.sh /usr/local/bin/start-container
 RUN chmod +x /usr/local/bin/start-container
 
