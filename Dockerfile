@@ -1,8 +1,18 @@
 # Stage 1: Build assets
-FROM node:20-alpine AS assets
+FROM node:22-alpine AS assets
+
+# Dependências de compilação para binários nativos (Tailwind Oxide)
+RUN apk add --no-cache libc6-compat
+
 WORKDIR /app
+
+# Copiar apenas package files primeiro (cache de dependências)
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Copiar o resto dos arquivos e buildar
 COPY . .
-RUN npm install && npm run build
+RUN npm run build
 
 # Stage 2: App
 FROM php:8.3-fpm-alpine
@@ -14,13 +24,13 @@ RUN apk add --no-cache \
     postgresql-dev \
     libpng-dev \
     libzip-dev \
+    icu-dev \
     zip \
     unzip \
-    git \
     ca-certificates
 
 # Instalar extensões PHP
-RUN docker-php-ext-install pdo_pgsql gd zip opcache
+RUN docker-php-ext-install pdo_pgsql gd zip opcache intl
 
 # Configurações de produção do PHP
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
