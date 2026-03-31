@@ -102,7 +102,15 @@ class AssessmentController extends Controller
                 ->ordered()
                 ->with('options')
                 ->get();
-        })->map(function ($question) use ($assessment) {
+        });
+
+        // Proteção contra erro de desserialização (incomplete object) em PHP 8.4 ou após mudanças de deploy
+        if (!$questions instanceof \Illuminate\Support\Collection) {
+            \Illuminate\Support\Facades\Cache::forget('questions.active.options');
+            return redirect()->back()->with('error', 'Erro ao carregar o questionário. Por favor, tente novamente.');
+        }
+
+        $questions = $questions->map(function ($question) use ($assessment) {
                 $answer = $assessment->answers()
                     ->where('question_id', $question->id)
                     ->first();

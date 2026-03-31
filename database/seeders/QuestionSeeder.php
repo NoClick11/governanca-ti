@@ -13,6 +13,9 @@ class QuestionSeeder extends Seeder
      */
     public function run(): void
     {
+        // Limpar cache de questões para evitar erros de desserialização
+        \Illuminate\Support\Facades\Cache::forget('questions.active.options');
+
         $questions = [
             [
                 'title' => 'Planejamento Estratégico de TI',
