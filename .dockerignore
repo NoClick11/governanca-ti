@@ -10,6 +10,7 @@ storage/framework/sessions/*
 !storage/framework/sessions/.gitignore
 storage/framework/views/*
 !storage/framework/views/.gitignore
+bootstrap/cache/*.php
 public/build
 public/hot
 public/storage

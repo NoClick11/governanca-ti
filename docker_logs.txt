@@ -1,0 +1,52 @@
+﻿
+In Application.php line 961:
+                                                      
+  Class "Laravel\Pail\PailServiceProvider" not found  
+                                                      
+
+Migra├º├Áes falharam. Verifique o banco de dados.
+
+In Application.php line 961:
+                                                      
+  Class "Laravel\Pail\PailServiceProvider" not found  
+                                                      
+
+
+In Application.php line 961:
+                                                      
+  Class "Laravel\Pail\PailServiceProvider" not found  
+                                                      
+
+
+In Application.php line 961:
+                                                      
+  Class "Laravel\Pail\PailServiceProvider" not found  
+                                                      
+
+2026-03-31 01:07:17,321 INFO Set uid to user 0 succeeded
+2026-03-31 01:07:17,324 INFO supervisord started with pid 1
+2026-03-31 01:07:18,327 INFO spawned: 'nginx' with pid 25
+2026-03-31 01:07:18,328 INFO spawned: 'php-fpm' with pid 26
+2026-03-31 01:07:19,383 INFO success: nginx entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-03-31 01:07:19,383 INFO success: php-fpm entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+docker : [31-Mar-2026 
+01:07:18] NOTICE: fpm is 
+running, pid 26
+No linha:1 caractere:1
++ docker logs 
+test-laravel-502 2>&1 | 
+Out-File -FilePath 
+docker_logs.tx ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo         
+     : NotSpecified: ([31  
+  -Mar-2026 01...running   
+ , pid 26:String) [], R    
+emoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+[31-Mar-2026 01:07:18] 
+NOTICE: ready to handle 
+connections
