@@ -37,9 +37,9 @@ class MaturityLevel extends Model
         
         $percentage = ($score / $maxScore) * 100;
 
-        return static::where('min_score', '<=', $percentage)
-            ->where('max_score', '>=', $percentage)
-            ->first();
+        return static::getAllOrdered()->first(function ($level) use ($percentage) {
+            return $percentage >= $level->min_score && $percentage <= $level->max_score;
+        });
     }
 
     /**
@@ -47,6 +47,8 @@ class MaturityLevel extends Model
      */
     public static function getAllOrdered()
     {
-        return static::orderBy('order')->get();
+        return \Illuminate\Support\Facades\Cache::remember('maturity_levels.ordered', 86400, function () {
+            return static::orderBy('order')->get();
+        });
     }
 }

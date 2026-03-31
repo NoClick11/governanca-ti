@@ -96,12 +96,13 @@ class AssessmentController extends Controller
             return redirect()->route('assessments.report', $assessment);
         }
 
-        // Carrega questões ativas com suas opções
-        $questions = Question::active()
-            ->ordered()
-            ->with('options')
-            ->get()
-            ->map(function ($question) use ($assessment) {
+        // Carrega questões ativas com suas opções direto da memória temporal (Cache)
+        $questions = \Illuminate\Support\Facades\Cache::remember('questions.active.options', 86400, function () {
+            return Question::active()
+                ->ordered()
+                ->with('options')
+                ->get();
+        })->map(function ($question) use ($assessment) {
                 $answer = $assessment->answers()
                     ->where('question_id', $question->id)
                     ->first();
@@ -204,7 +205,9 @@ class AssessmentController extends Controller
 
         $maturityLevel = MaturityLevel::getForScore($assessment->total_score ?? 0, $assessment->max_score ?? 75);
         $allLevels = MaturityLevel::getAllOrdered();
-        $indicators = MaturityIndicator::all();
+        $indicators = \Illuminate\Support\Facades\Cache::remember('indicators.all', 86400, function () {
+            return MaturityIndicator::all();
+        });
         $maxScore = $assessment->max_score ?? 75;
 
         // Pontuação por questão

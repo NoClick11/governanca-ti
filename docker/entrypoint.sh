@@ -13,10 +13,11 @@ mkdir -p /var/www/html/storage/framework/sessions
 mkdir -p /var/www/html/storage/framework/views
 mkdir -p /var/www/html/storage/logs
 
-# 4. Limpar os caches
-php artisan config:clear
-php artisan route:clear
-php artisan view:clear
+# 4. Compilar todos os arquivos otimizados em Cache (Performance Máxima)
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan event:cache
 
 # 5. Rodar as migrações (O Laravel vai ler as variáveis do Railway diretamente agora)
 php artisan migrate --force || echo "Migrações falharam. Verifique o banco de dados."
