@@ -12,6 +12,9 @@ class MaturityLevelSeeder extends Seeder
      */
     public function run(): void
     {
+        // Limpar cache para evitar dados antigos/corrompidos
+        \Illuminate\Support\Facades\Cache::forget('maturity_levels.ordered');
+
         // Limpar níveis antigos se existirem
         MaturityLevel::query()->delete();
 

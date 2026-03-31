@@ -19,6 +19,15 @@ class MaturityLevel extends Model
         'order',
     ];
 
+    /**
+     * Limpa o cache sempre que o banco de dados é alterado.
+     */
+    protected static function booted()
+    {
+        static::saved(fn () => \Illuminate\Support\Facades\Cache::forget('maturity_levels.ordered'));
+        static::deleted(fn () => \Illuminate\Support\Facades\Cache::forget('maturity_levels.ordered'));
+    }
+
     protected function casts(): array
     {
         return [
