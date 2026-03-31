@@ -13,10 +13,10 @@ import { Link } from '@inertiajs/vue3';
         <!-- Logo/Header Area -->
         <div class="relative z-10 mb-8 flex flex-col items-center">
             <Link href="/" class="flex flex-col items-center gap-3 group">
-                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-2xl shadow-indigo-500/20 group-hover:scale-105 transition-transform duration-300">
-                    <span class="material-symbols-outlined text-white text-3xl">shield</span>
+                <div class="w-16 h-16 rounded-2xl bg-white flex items-center justify-center shadow-2xl shadow-indigo-500/20 group-hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <img src="/images/logo-govlens.png" alt="GovLens Logo" class="w-12 h-12 object-contain">
                 </div>
-                <h1 class="text-2xl font-bold text-white tracking-tight">Governança TI</h1>
+                <h1 class="text-2xl font-bold text-white tracking-tight">GovLens</h1>
             </Link>
         </div>
 

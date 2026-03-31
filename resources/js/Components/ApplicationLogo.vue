@@ -1,5 +1,5 @@
 <template>
     <div class="flex items-center justify-center">
-        <span class="material-symbols-outlined text-4xl text-inherit">shield</span>
+        <img src="/images/logo-govlens.png" alt="GovLens Logo" class="w-auto h-12">
     </div>
 </template>

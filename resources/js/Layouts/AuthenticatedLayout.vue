@@ -67,8 +67,8 @@ const navigation = computed(() => {
             <!-- Logo -->
             <div class="flex items-center h-16 px-4 border-b border-gray-800">
                 <Link :href="route('dashboard')" class="flex items-center gap-3">
-                    <div class="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                        <span class="material-symbols-outlined text-white text-xl">shield</span>
+                    <div class="flex-shrink-0 w-10 h-10 rounded-xl overflow-hidden bg-white flex items-center justify-center">
+                        <img src="/images/logo-govlens.png" alt="GovLens Logo" class="w-8 h-8 object-contain">
                     </div>
                     <transition
                         enter-active-class="transition-opacity duration-200"
@@ -79,7 +79,7 @@ const navigation = computed(() => {
                         leave-to-class="opacity-0"
                     >
                         <span v-if="showSidebar" class="text-white font-bold text-lg whitespace-nowrap">
-                            Governança TI
+                            GovLens
                         </span>
                     </transition>
                 </Link>
