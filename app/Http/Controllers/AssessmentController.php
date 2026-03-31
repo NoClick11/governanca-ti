@@ -96,19 +96,8 @@ class AssessmentController extends Controller
             return redirect()->route('assessments.report', $assessment);
         }
 
-        // Carrega questões ativas com suas opções direto da memória temporal (Cache)
-        $questions = \Illuminate\Support\Facades\Cache::remember('questions.active.options', 86400, function () {
-            return Question::active()
-                ->ordered()
-                ->with('options')
-                ->get();
-        });
-
-        // Proteção contra erro de desserialização (incomplete object) em PHP 8.4 ou após mudanças de deploy
-        if (!$questions instanceof \Illuminate\Support\Collection) {
-            \Illuminate\Support\Facades\Cache::forget('questions.active.options');
-            return redirect()->back()->with('error', 'Erro ao carregar o questionário. Por favor, tente novamente.');
-        }
+        // Carrega questões ativas com suas opções do cache resiliente no modelo
+        $questions = Question::getActiveCached();
 
         $questions = $questions->map(function ($question) use ($assessment) {
                 $answer = $assessment->answers()
@@ -213,9 +202,7 @@ class AssessmentController extends Controller
 
         $maturityLevel = MaturityLevel::getForScore($assessment->total_score ?? 0, $assessment->max_score ?? 75);
         $allLevels = MaturityLevel::getAllOrdered();
-        $indicators = \Illuminate\Support\Facades\Cache::remember('indicators.all', 86400, function () {
-            return MaturityIndicator::all();
-        });
+        $indicators = MaturityIndicator::getAllCached();
         $maxScore = $assessment->max_score ?? 75;
 
         // Pontuação por questão

@@ -52,12 +52,20 @@ class MaturityLevel extends Model
     }
 
     /**
-     * Retorna todos os níveis ordenados.
+     * Retorna todos os níveis ordenados de forma resiliente ao cache.
      */
     public static function getAllOrdered()
     {
-        return \Illuminate\Support\Facades\Cache::remember('maturity_levels.ordered', 86400, function () {
+        $levels = \Illuminate\Support\Facades\Cache::remember('maturity_levels.ordered', 86400, function () {
             return static::orderBy('order')->get();
         });
+
+        // Proteção contra erro de desserialização (incomplete object / __Incomplete_Class)
+        if (!$levels instanceof \Illuminate\Support\Collection) {
+            \Illuminate\Support\Facades\Cache::forget('maturity_levels.ordered');
+            return static::orderBy('order')->get();
+        }
+
+        return $levels;
     }
 }

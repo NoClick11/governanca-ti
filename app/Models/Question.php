@@ -40,15 +40,36 @@ class Question extends Model
     }
 
     /**
+     * Retorna todas as questões ativas com opções de forma resiliente ao cache.
+     */
+    public static function getActiveCached()
+    {
+        $questions = \Illuminate\Support\Facades\Cache::remember('questions.active.options', 86400, function () {
+            return static::active()
+                ->ordered()
+                ->with('options')
+                ->get();
+        });
+
+        // Proteção contra erro de desserialização (incomplete object)
+        if (!$questions instanceof \Illuminate\Support\Collection) {
+            \Illuminate\Support\Facades\Cache::forget('questions.active.options');
+            return static::active()
+                ->ordered()
+                ->with('options')
+                ->get();
+        }
+
+        return $questions;
+    }
+
+    /**
      * Calcula a pontuação máxima possível somando o maior peso de cada questão ativa.
      */
     public static function getMaxPossibleScore(): int
     {
-        return static::active()
-            ->with('options')
-            ->get()
-            ->sum(function ($question) {
-                return $question->options->max('weight') ?? 5;
-            });
+        return static::getActiveCached()->sum(function ($question) {
+            return $question->options->max('weight') ?? 5;
+        });
     }
 }

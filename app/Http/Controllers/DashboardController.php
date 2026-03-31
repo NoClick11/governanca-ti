@@ -35,12 +35,6 @@ class DashboardController extends Controller
         $levelDistribution = [];
 
         foreach ($levels as $level) {
-            // Prevenção contra dados corrompidos no cache (evita ErrorException de tipo string)
-            if (!is_object($level)) {
-                \Illuminate\Support\Facades\Cache::forget('maturity_levels.ordered');
-                return redirect()->route('dashboard'); // Recarrega para forçar cache novo
-            }
-
             $count = $completedScores->filter(function ($score) use ($level) {
                 return $score >= (int)$level->min_score && $score <= (int)$level->max_score;
             })->count();
