@@ -19,8 +19,8 @@ php artisan route:cache
 php artisan view:cache
 php artisan event:cache
 
-# 5. Rodar as migrações (O Laravel vai ler as variáveis do Railway diretamente agora)
-php artisan migrate --force || echo "Migrações falharam. Verifique o banco de dados."
+# 5. Rodar as migrações e Seeders (Garante que níveis e questões existam)
+php artisan migrate --force --seed || echo "Migrações ou seeds falharam. Verifique o banco de dados."
 
 # 6. Ajustar as permissões
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
