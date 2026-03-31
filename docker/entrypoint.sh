@@ -12,12 +12,15 @@ mkdir -p /var/www/html/storage/logs
 
 # 3. Rodar as migrações e o cache (Isso pode criar arquivos novos como root)
 php artisan migrate --force || echo "Migrações falharam. Verifique o banco de dados."
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
 
-# 4. Ajustar as permissões DEPOIS do artisan (Dá a posse de tudo para o Nginx/PHP)
+# 4. Rodar as migrações
+php artisan migrate --force || echo "Migrações falharam. Verifique o banco de dados."
+
+# 5. Ajustar as permissões DEPOIS do artisan
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# 5. Iniciar o servidor web
+# 6. Iniciar o servidor web
 exec /usr/bin/supervisord -c /etc/supervisord.conf
