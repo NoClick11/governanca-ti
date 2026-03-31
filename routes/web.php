@@ -18,6 +18,14 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
+Route::get('/db-test', function () {
+    return response()->json([
+        'driver' => DB::connection()->getDriverName(),
+        'database' => config('database.connections.pgsql.database'),
+        'host' => config('database.connections.pgsql.host')
+    ]);
+});
+
 Route::middleware('auth')->group(function () {
     // Perfil do usuário
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -48,4 +56,4 @@ Route::middleware('auth')->group(function () {
     Route::get('/assessments/{assessment}/report', [AssessmentController::class, 'report'])->name('assessments.report');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
