@@ -145,20 +145,38 @@ class AssessmentController extends Controller
         }
 
         $validated = $request->validate([
-            'question_id' => 'required|exists:questions,id',
-            'option_id' => 'required|exists:options,id',
+            'question_id' => 'nullable|exists:questions,id',
+            'option_id' => 'nullable|exists:options,id',
+            'answers' => 'nullable|array',
+            'answers.*.question_id' => 'required_with:answers|exists:questions,id',
+            'answers.*.option_id' => 'required_with:answers|exists:options,id',
         ]);
 
-        // Upsert: atualiza a resposta se já existir, senão cria
-        AssessmentAnswer::updateOrCreate(
-            [
-                'assessment_id' => $assessment->id,
-                'question_id' => $validated['question_id'],
-            ],
-            [
-                'option_id' => $validated['option_id'],
-            ]
-        );
+        \DB::transaction(function () use ($assessment, $validated) {
+            if (!empty($validated['answers'])) {
+                foreach ($validated['answers'] as $ans) {
+                    AssessmentAnswer::updateOrCreate(
+                        [
+                            'assessment_id' => $assessment->id,
+                            'question_id' => $ans['question_id'],
+                        ],
+                        [
+                            'option_id' => $ans['option_id'],
+                        ]
+                    );
+                }
+            } elseif (!empty($validated['question_id']) && !empty($validated['option_id'])) {
+                AssessmentAnswer::updateOrCreate(
+                    [
+                        'assessment_id' => $assessment->id,
+                        'question_id' => $validated['question_id'],
+                    ],
+                    [
+                        'option_id' => $validated['option_id'],
+                    ]
+                );
+            }
+        });
 
         return back();
     }

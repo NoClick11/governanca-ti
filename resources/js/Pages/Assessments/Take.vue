@@ -1,6 +1,6 @@
 <script setup>
 import { Head, router } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 
 const props = defineProps({
     assessment: Object,
@@ -8,51 +8,108 @@ const props = defineProps({
     progress: Object,
 });
 
+// Estado local reativo cópia profunda para permitir atualização instantânea sem lag
+const localQuestions = ref(JSON.parse(JSON.stringify(props.questions)));
 const currentQuestionIndex = ref(0);
 const saving = ref(false);
+const pendingChanges = ref(false);
 
-const currentQuestion = computed(() => props.questions[currentQuestionIndex.value]);
+const currentQuestion = computed(() => localQuestions.value[currentQuestionIndex.value]);
 const isFirst = computed(() => currentQuestionIndex.value === 0);
-const isLast = computed(() => currentQuestionIndex.value === props.questions.length - 1);
+const isLast = computed(() => currentQuestionIndex.value === localQuestions.value.length - 1);
 
-const allAnswered = computed(() => props.questions.every(q => q.selected_option_id));
-const answeredCount = computed(() => props.questions.filter(q => q.selected_option_id).length);
-const progressPct = computed(() => Math.round((answeredCount.value / props.questions.length) * 100));
+const allAnswered = computed(() => localQuestions.value.every(q => q.selected_option_id));
+const answeredCount = computed(() => localQuestions.value.filter(q => q.selected_option_id).length);
+const progressPct = computed(() => Math.round((answeredCount.value / localQuestions.value.length) * 100));
 
-const selectOption = (questionId, optionId) => {
+// Sincroniza se as questões mudarem de fora
+watch(() => props.questions, (newVal) => {
+    localQuestions.value = JSON.parse(JSON.stringify(newVal));
+}, { deep: true });
+
+const saveAllAnswers = async () => {
+    if (!pendingChanges.value) return;
+    
     saving.value = true;
+    const batch = localQuestions.value
+        .filter(q => q.selected_option_id)
+        .map(q => ({
+            question_id: q.id,
+            option_id: q.selected_option_id
+        }));
+
     router.post(
         route('assessments.answer', props.assessment.id),
-        { question_id: questionId, option_id: optionId },
+        { answers: batch },
         {
             preserveScroll: true,
             preserveState: true,
             onSuccess: () => {
-                // Update local state
-                const q = props.questions.find(q => q.id === questionId);
-                if (q) q.selected_option_id = optionId;
+                pendingChanges.value = false;
             },
-            onFinish: () => (saving.value = false),
+            onFinish: () => {
+                saving.value = false;
+            }
         }
     );
 };
 
+const selectOption = (questionId, optionId) => {
+    const q = localQuestions.value.find(q => q.id === questionId);
+    if (q) {
+        q.selected_option_id = optionId;
+        pendingChanges.value = true;
+        
+        // Salva de forma otimista em segundo plano
+        saveAllAnswers();
+    }
+};
+
 const goNext = () => {
-    if (!isLast.value) currentQuestionIndex.value++;
+    if (!isLast.value) {
+        saveAllAnswers();
+        currentQuestionIndex.value++;
+    }
 };
 
 const goPrev = () => {
-    if (!isFirst.value) currentQuestionIndex.value--;
+    if (!isFirst.value) {
+        saveAllAnswers();
+        currentQuestionIndex.value--;
+    }
 };
 
 const goToQuestion = (index) => {
+    saveAllAnswers();
     currentQuestionIndex.value = index;
 };
 
 const completeAssessment = () => {
     if (!allAnswered.value) return;
     if (confirm('Tem certeza que deseja finalizar a avaliação? Esta ação não pode ser desfeita.')) {
-        router.post(route('assessments.complete', props.assessment.id));
+        const batch = localQuestions.value
+            .filter(q => q.selected_option_id)
+            .map(q => ({
+                question_id: q.id,
+                option_id: q.selected_option_id
+            }));
+
+        saving.value = true;
+        router.post(
+            route('assessments.answer', props.assessment.id),
+            { answers: batch },
+            {
+                preserveScroll: true,
+                preserveState: true,
+                onSuccess: () => {
+                    pendingChanges.value = false;
+                    router.post(route('assessments.complete', props.assessment.id));
+                },
+                onFinish: () => {
+                    saving.value = false;
+                }
+            }
+        );
     }
 };
 </script>
@@ -70,7 +127,15 @@ const completeAssessment = () => {
                     </div>
                     <div>
                         <h1 class="text-lg font-bold text-white">Avaliação de Maturidade</h1>
-                        <p class="text-xs text-gray-500">Responda todas as questões para gerar o relatório</p>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <p class="text-xs text-gray-500">Responda todas as questões para gerar o relatório</p>
+                            <span class="w-1 h-1 rounded-full bg-gray-700"></span>
+                            <span class="text-xs font-semibold flex items-center gap-1" :class="saving ? 'text-indigo-400' : 'text-emerald-400'">
+                                <span class="material-symbols-outlined text-xs animate-spin" v-if="saving" style="font-size: 12px; line-height: 1;">sync</span>
+                                <span class="material-symbols-outlined text-xs" v-else style="font-size: 12px; line-height: 1;">cloud_done</span>
+                                {{ saving ? 'Salvando...' : 'Progresso Salvo' }}
+                            </span>
+                        </div>
                     </div>
                 </div>
                 <button
@@ -87,7 +152,7 @@ const completeAssessment = () => {
             <div class="max-w-4xl mx-auto">
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-xs text-gray-400">Progresso</span>
-                    <span class="text-xs text-gray-400 font-mono">{{ answeredCount }}/{{ questions.length }} ({{ progressPct }}%)</span>
+                    <span class="text-xs text-gray-400 font-mono">{{ answeredCount }}/{{ localQuestions.length }} ({{ progressPct }}%)</span>
                 </div>
                 <div class="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
                     <div
@@ -108,7 +173,7 @@ const completeAssessment = () => {
                             <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Questões</h3>
                             <div class="grid grid-cols-3 gap-2">
                                 <button
-                                    v-for="(q, index) in questions"
+                                    v-for="(q, index) in localQuestions"
                                     :key="q.id"
                                     @click="goToQuestion(index)"
                                     :class="[
@@ -137,7 +202,7 @@ const completeAssessment = () => {
                                             {{ currentQuestionIndex + 1 }}
                                         </span>
                                         <span class="text-xs text-gray-500 uppercase tracking-wider">
-                                            Questão {{ currentQuestionIndex + 1 }} de {{ questions.length }}
+                                            Questão {{ currentQuestionIndex + 1 }} de {{ localQuestions.length }}
                                         </span>
                                     </div>
                                     <h2 class="text-xl font-bold text-white">{{ currentQuestion.title }}</h2>
