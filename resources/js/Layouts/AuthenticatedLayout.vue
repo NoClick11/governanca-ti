@@ -56,11 +56,11 @@ const navigation = computed(() => {
 </script>
 
 <template>
-    <div class="min-h-screen flex bg-gray-900">
+    <div class="min-h-screen flex bg-gray-900 print:bg-white print:block print:min-h-0">
         <!-- Sidebar -->
         <aside
             :class="[
-                'fixed inset-y-0 left-0 z-50 flex flex-col transition-all duration-300 bg-gray-950 border-r border-gray-800',
+                'fixed inset-y-0 left-0 z-50 flex flex-col transition-all duration-300 bg-gray-950 border-r border-gray-800 no-print print:hidden',
                 showSidebar ? 'w-64' : 'w-20',
             ]"
         >
@@ -168,12 +168,12 @@ const navigation = computed(() => {
         <!-- Main Content -->
         <div
             :class="[
-                'flex-1 flex flex-col transition-all duration-300',
+                'flex-1 flex flex-col transition-all duration-300 print:ml-0 print:p-0',
                 showSidebar ? 'ml-64' : 'ml-20',
             ]"
         >
             <!-- Top Bar -->
-            <header class="sticky top-0 z-40 h-16 border-b border-gray-800 bg-gray-900/80 backdrop-blur-xl flex items-center justify-between px-6">
+            <header class="sticky top-0 z-40 h-16 border-b border-gray-800 bg-gray-900/80 backdrop-blur-xl flex items-center justify-between px-6 no-print print:hidden">
                 <div>
                     <slot name="header" />
                 </div>

@@ -1485,7 +1485,7 @@ const printReport = () => {
     main,
     #app {
         background-color: #ffffff !important;
-        color: #1a1a1a !important;
+        color: #0f172a !important;
         width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
@@ -1507,12 +1507,20 @@ const printReport = () => {
     .tab-section-kpis {
         display: block !important;
         page-break-before: always !important;
+        break-before: page !important;
     }
 
-    /* Otimizar quebra de página de cada iniciativa */
-    .tab-section-roadmap > div {
+    /* Otimizar quebra de página de cada card */
+    .bg-gray-800\/50,
+    .bg-gray-800\/40,
+    .bg-gray-900\/30,
+    .bg-gradient-to-r,
+    .tab-section-roadmap > div,
+    .tab-section-dimensions > div,
+    .tab-section-kpis > div {
         page-break-inside: avoid !important;
-        margin-bottom: 2rem !important;
+        break-inside: avoid !important;
+        margin-bottom: 1.5rem !important;
     }
 
     /* Forçar cores corporativas na impressão */
@@ -1528,7 +1536,7 @@ const printReport = () => {
     .bg-gray-900\/30,
     .bg-gradient-to-r {
         background: #f8fafc !important;
-        border: 1px solid #e2e8f0 !important;
+        border: 1px solid #cbd5e1 !important;
         box-shadow: none !important;
         border-radius: 12px !important;
         color: #1e293b !important;
@@ -1538,8 +1546,43 @@ const printReport = () => {
         color: #0f172a !important;
     }
 
-    p, span, li, td {
+    p, li, td, th {
         color: #334155 !important;
+    }
+
+    /* Resetar classes de texto cinza para alto contraste e legibilidade em papel */
+    .text-gray-300,
+    .text-gray-400,
+    .text-gray-500,
+    .text-gray-600 {
+        color: #475569 !important;
+    }
+
+    /* Otimizar cores semânticas para contraste na folha de papel */
+    .text-indigo-400, .text-indigo-300 {
+        color: #4f46e5 !important; /* Indigo mais forte */
+    }
+    .text-amber-400, .text-amber-500 {
+        color: #b45309 !important; /* Amber mais escuro */
+    }
+    .text-emerald-400, .text-emerald-500 {
+        color: #047857 !important; /* Esmeralda mais escuro */
+    }
+    .text-red-400, .text-red-500 {
+        color: #b91c1c !important; /* Vermelho mais escuro */
+    }
+
+    /* Garantir renderização dos ícones do Material Symbols */
+    .material-symbols-outlined {
+        display: inline-block !important;
+        font-family: 'Material Symbols Outlined' !important;
+        font-style: normal;
+        font-weight: normal;
+        font-variant: normal;
+        text-transform: none;
+        line-height: 1;
+        -webkit-font-smoothing: antialiased;
+        color: inherit !important;
     }
 
     /* Bordas de tabela e grid em cinza escuro */
@@ -1549,11 +1592,29 @@ const printReport = () => {
         border-color: #cbd5e1 !important;
     }
 
-    /* Forçar abertura das UIs colapsáveis (como o roadmap) */
-    .tab-content-pdti [v-show="expandedInitiativeId === init.id"] {
+    /* Forçar exibição de toda a tabela de detalhamento de riscos (sem limites de scroll) */
+    .tab-section-risks .max-h-\[500px\] {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    /* Forçar abertura das UIs colapsáveis do Roadmap */
+    .tab-section-roadmap .bg-gray-800\/40 > div:nth-child(2) {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* Garantir que o grid interno de entregáveis e passos fique em 2 colunas no papel */
+    .tab-section-roadmap .bg-gray-800\/40 > div:nth-child(2) .grid {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
         gap: 1.5rem !important;
+    }
+
+    /* Esconder o ícone de seta de sanfona no papel */
+    .tab-section-roadmap .bg-gray-800\/40 > div:first-child .material-symbols-outlined:last-child {
+        display: none !important;
     }
 
     /* Ajuste na visualização do grid de matriz de riscos na folha */
